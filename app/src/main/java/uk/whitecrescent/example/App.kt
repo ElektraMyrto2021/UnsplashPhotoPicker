@@ -10,9 +10,9 @@ class App : Application() {
 
         UnsplashPhotoPickerConfig.init(
             application = this,
-            accessKey = ACCESS_KEY,
-            secretKey = SECRET_KEY,
-            unsplashAppName = APP_NAME,
+            accessKey = "z5kbG6I9gxXdaQ4udAx9Ir7i0ICYubcww3TtW3zBA4c",
+            secretKey = "bsPK3IQCgdfvA32GnPUxM05Z1_jQjIgo7Ki9rVz0j9I",
+            unsplashAppName = "adbuilder",
             isLoggingEnabled = false
         )
     }

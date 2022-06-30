@@ -9,8 +9,10 @@ package com.github.basshelal.unsplashpicker.presentation
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.net.NetworkInfo
+import android.os.Build
 import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextWatcher
@@ -23,12 +25,12 @@ import android.view.animation.LinearInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.IdRes
 import androidx.annotation.IntRange
 import androidx.annotation.Keep
 import androidx.cardview.widget.CardView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.view.postDelayed
 import androidx.core.view.updatePadding
@@ -80,9 +82,10 @@ public class UnsplashPhotoPicker
         context: Context,
         attributeSet: AttributeSet? = null,
         defStyle: Int = 0
-) : ConstraintLayout(context, attributeSet, defStyle) {
+) : RelativeLayout(context, attributeSet, defStyle) {
 
     //region Privates
+    private lateinit var interactionListener: OnPhotoSelectedListener
 
     private val attrs =
             context.obtainStyledAttributes(attributeSet, R.styleable.UnsplashPhotoPicker)
@@ -93,15 +96,31 @@ public class UnsplashPhotoPicker
 
     private var onPhotoSelectedListener = object : OnPhotoSelectedListener {
         override fun onClickPhoto(photo: UnsplashPhoto, imageView: ImageView) {
-            if (clickOpensPhoto) showPhoto(photo, showPhotoSize)
-            this@UnsplashPhotoPicker.onClickPhoto(photo, imageView)
+            if (clickOpensPhoto)
+                selectPhoto(photo)
+                sendPhotosAsResult(photo)
+            val res=sendPhotosAsResult(photo)
+                showParent(res)
+               this@UnsplashPhotoPicker.onClickPhoto(photo, imageView)
         }
 
         override fun onLongClickPhoto(photo: UnsplashPhoto, imageView: ImageView) {
-            if (longClickSelectsPhoto) selectPhoto(photo)
+            if (longClickSelectsPhoto)
+                showPhoto(photo, showPhotoSize)
+            selectPhoto(photo)
             this@UnsplashPhotoPicker.onLongClickPhoto(photo, imageView)
         }
+
+        override fun finishPickUnsplashImages(result: Intent?) {
+            this@UnsplashPhotoPicker.finishPickUnsplashImages(result)
+
+        }
     }
+
+    private fun finishPickUnsplashImages(result: Intent?) {
+
+    }
+
 
     // When the user has searched something, a back press will clear the selection
     // as if the search was a new fragment even though it wasn't
@@ -315,7 +334,7 @@ public class UnsplashPhotoPicker
      * You can select a photo yourself using [selectPhoto].
      */
     var longClickSelectsPhoto: Boolean =
-            attrs.getBoolean(R.styleable.UnsplashPhotoPicker_photoPicker_longClickSelectsPhoto, false)
+            attrs.getBoolean(R.styleable.UnsplashPhotoPicker_photoPicker_longClickSelectsPhoto, true)
 
     // endregion XML attributes
 
@@ -428,7 +447,9 @@ public class UnsplashPhotoPicker
             setHasFixedSize(true)
             // never overscroll because we do overscrolling animations ourselves,
             // keeping Android overscrolls conflicts
-            overScrollMode = View.OVER_SCROLL_NEVER
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+                overScrollMode = View.OVER_SCROLL_NEVER
+            }
             layoutManager =
                     StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL)
             adapter = this@UnsplashPhotoPicker.adapter
@@ -515,6 +536,20 @@ public class UnsplashPhotoPicker
         adapter.selectPhoto(photo)
     }
 
+    public fun sendPhotosAsResult(photo: UnsplashPhoto): Intent {
+        // get the selected photos
+        val photos: List<UnsplashPhoto> = selectedPhotos
+        // track the downloads
+
+        // track the downloads
+        //downloadPhoto(photo)
+        // send them back to the calling activity
+        val data = Intent()
+        data.putExtra("EXTRA_PHOTOS", photo)
+       // onPhotoSelectedListener.finishPickUnsplashImages(data)
+        return data
+    }
+
     /**
      * Shows the provided [photo] with the provided [photoSize].
      *
@@ -532,6 +567,12 @@ public class UnsplashPhotoPicker
         return PhotoShowFragment.show(
                 activity, photo, android.R.id.content, photoSize, photoByString, onString
         )
+    }
+
+
+    public fun showParent(result: Intent?): Unit? {
+        searchEditText?.hideKeyboard()
+        return result?.let { PhotoPickerFragment.newInstanceBack(activity, it) }
     }
 
     /**
@@ -610,9 +651,9 @@ public class UnsplashPhotoPicker
          * This is just a wrapper around [PhotoPickerFragment.show]
          */
         public inline fun show(
-                activity: FragmentActivity,
-                @IdRes container: Int = android.R.id.content,
-                noinline apply: UnsplashPhotoPicker.() -> Unit = {}
+            activity: FragmentActivity,
+            @IdRes container: Int = android.R.id.content,
+            noinline apply: UnsplashPhotoPicker.() -> Unit = {}
         ): PhotoPickerFragment =
                 PhotoPickerFragment.show(activity, container, apply)
 
@@ -660,8 +701,10 @@ public class UnsplashPhotoPicker
             // lose the selection so that the paste menu that appears when you long hold disappears for good
             this.setSelection(0)
             this.clearFocus()
-            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)
-                    ?.hideSoftInputFromWindow(windowToken, 0)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
+                (context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)
+                        ?.hideSoftInputFromWindow(windowToken, 0)
+            }
         }
     }
 
@@ -697,16 +740,22 @@ public class UnsplashPhotoPicker
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         // onNext
-                        @Suppress("DEPRECATION")
                         {
-                            Log.e("INTERNET", it.state().toString())
-                            if (it.state() != NetworkInfo.State.CONNECTED) {
-                                isConnected = false
+                            //Log.e("INTERNET", it.state().toString())
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+
+                                if (it.state() != NetworkInfo.State.CONNECTED) {
+                                    isConnected = false
+                                }
                             }
-                            if (!isConnected && it.state() == NetworkInfo.State.CONNECTED) {
-                                this@UnsplashPhotoPicker.initialPage_progressBar?.isVisible = true
-                                Observable.just(searchEditText!!.text).search()
-                                isConnected = true
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+
+                                if (!isConnected && it.state() == NetworkInfo.State.CONNECTED) {
+                                    this@UnsplashPhotoPicker.initialPage_progressBar?.isVisible =
+                                        true
+                                    Observable.just(searchEditText!!.text).search()
+                                    isConnected = true
+                                }
                             }
                         },
                         // onError
@@ -766,17 +815,21 @@ internal inline val View.verticalMargin: Int
     get() = (layoutParams as ViewGroup.MarginLayoutParams).let { it.topMargin + it.bottomMargin }
 
 private inline fun View.slideUp(duration: Int = 200, amount: Float = -this.height.toFloat()) {
-    ObjectAnimator.ofFloat(this, "translationY", amount - verticalMargin).apply {
-        this.duration = duration.L
-        this.interpolator = LinearInterpolator()
-    }.start()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        ObjectAnimator.ofFloat(this, "translationY", amount - verticalMargin).apply {
+            this.duration = duration.L
+            this.interpolator = LinearInterpolator()
+        }.start()
+    }
 }
 
 private inline fun View.slideDown(duration: Int = 200, amount: Float = 0F) {
-    ObjectAnimator.ofFloat(this, "translationY", amount).apply {
-        this.duration = duration.L
-        this.interpolator = LinearInterpolator()
-    }.start()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        ObjectAnimator.ofFloat(this, "translationY", amount).apply {
+            this.duration = duration.L
+            this.interpolator = LinearInterpolator()
+        }.start()
+    }
 }
 
 private open class SimpleTextWatcher : TextWatcher {

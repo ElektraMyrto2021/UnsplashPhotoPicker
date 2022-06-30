@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 
         UnsplashPhotoPicker.show(this) {
             hasSearch = true
-            clickOpensPhoto = false
+            clickOpensPhoto = true
             longClickSelectsPhoto = false
             isMultipleSelection = true
 

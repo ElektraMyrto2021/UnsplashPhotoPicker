@@ -7,7 +7,7 @@ import android.widget.ImageView
 internal class AspectRatioImageView
 @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : ImageView(context, attrs, defStyleAttr) {
+) : androidx.appcompat.widget.AppCompatImageView(context, attrs, defStyleAttr) {
 
     internal var aspectRatio: Double = -1.0
 

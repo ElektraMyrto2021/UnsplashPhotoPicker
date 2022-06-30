@@ -5,8 +5,7 @@ package com.github.basshelal.unsplashpicker.presentation
 import android.content.Context
 import android.util.AttributeSet
 import androidx.recyclerview.widget.RecyclerView
-import me.everything.android.ui.overscroll.VerticalOverScrollBounceEffectDecorator
-import me.everything.android.ui.overscroll.adapters.RecyclerViewOverScrollDecorAdapter
+
 
 class UnsplashPhotoPickerRecyclerView
 @JvmOverloads constructor(
@@ -29,7 +28,6 @@ class UnsplashPhotoPickerRecyclerView
 
     var oldVerticalScrollOffset: Int = 0
     private var oldTime: Long = 0L
-    private var overScroller: VerticalOverScroller? = null
 
     override fun setLayoutManager(layoutManager: LayoutManager?) {
         super.setLayoutManager(layoutManager)
@@ -39,7 +37,6 @@ class UnsplashPhotoPickerRecyclerView
 
     private inline fun setUpOverScroller() {
 
-        overScroller = VerticalOverScroller(this)
 
         addVelocityTrackerOnFlingListener()
 
@@ -55,7 +52,6 @@ class UnsplashPhotoPickerRecyclerView
                     if (dy != 0 && scrollState == SCROLL_STATE_SETTLING &&
                         (verticalScrollOffset == 0 || verticalScrollOffset == maxVerticalScroll)
                     ) {
-                        overScroller?.overScroll()
                     }
 
                     oldVerticalScrollOffset = verticalScrollOffset
@@ -88,21 +84,4 @@ class UnsplashPhotoPickerRecyclerView
 
 private const val overScrollThreshold = 20.0
 
-private class VerticalOverScroller(
-    val recyclerView: UnsplashPhotoPickerRecyclerView
-) : VerticalOverScrollBounceEffectDecorator(RecyclerViewOverScrollDecorAdapter(recyclerView)) {
 
-    inline fun overScroll() {
-
-        val threshold = (recyclerView.height.D / overScrollThreshold)
-
-        val amount = -(recyclerView.verticalScrollSpeed.F / threshold.F)
-
-        issueStateTransition(mOverScrollingState)
-
-        translateView(recyclerView, amount)
-
-        issueStateTransition(mBounceBackState)
-
-    }
-}

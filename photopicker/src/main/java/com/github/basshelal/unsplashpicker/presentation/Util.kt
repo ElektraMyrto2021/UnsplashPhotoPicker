@@ -3,6 +3,7 @@
 package com.github.basshelal.unsplashpicker.presentation
 
 import android.content.Context
+import android.os.Build
 import android.util.DisplayMetrics
 import kotlin.math.roundToInt
 
@@ -14,8 +15,12 @@ import kotlin.math.roundToInt
  * @return A float value to represent px equivalent to dp depending on device density
  */
 inline internal fun convertDpToPx(dp: Number, context: Context): Int {
-    return (dp.F * (context.resources.displayMetrics.densityDpi.F /
-            DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.DONUT) {
+        (dp.F * (context.resources.displayMetrics.densityDpi.F /
+                DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
+    } else {
+        TODO("VERSION.SDK_INT < DONUT")
+    }
 }
 
 /**
@@ -26,8 +31,12 @@ inline internal fun convertDpToPx(dp: Number, context: Context): Int {
  * @return A float value to represent dp equivalent to px value
  */
 inline internal fun convertPxToDp(px: Number, context: Context): Int {
-    return (px.F / (context.resources.displayMetrics.densityDpi.F /
-            DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.DONUT) {
+        (px.F / (context.resources.displayMetrics.densityDpi.F /
+                DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
+    } else {
+        TODO("VERSION.SDK_INT < DONUT")
+    }
 }
 
 inline internal val Number.D: Double

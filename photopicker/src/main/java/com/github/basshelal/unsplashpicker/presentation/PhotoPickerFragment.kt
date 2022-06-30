@@ -2,6 +2,7 @@
 
 package com.github.basshelal.unsplashpicker.presentation
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,6 +31,8 @@ class PhotoPickerFragment
     private val onBackPressed = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() = finish()
     }
+    private lateinit var interactionListener: OnPhotoSelectedListener
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +45,7 @@ class PhotoPickerFragment
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+
         return inflater.inflate(R.layout.fragment_photo_picker, container, false)
     }
 
@@ -77,9 +81,14 @@ class PhotoPickerFragment
          * Otherwise you should use [show] instead which will do the transaction for you.
          */
         public fun newInstance(apply: UnsplashPhotoPicker.() -> Unit): PhotoPickerFragment {
+
             return PhotoPickerFragment(apply)
         }
-
+        public fun newInstanceBack(activity: FragmentActivity,result: Intent)
+        {
+            activity.setResult(2, result)
+            activity.finish()
+        }
         /**
          * Shows an [UnsplashPhotoPicker] in a [PhotoPickerFragment] which will have the passed in
          * [apply] block applied to it and returns the [PhotoPickerFragment].
@@ -98,5 +107,7 @@ class PhotoPickerFragment
                     .commit()
             return fragment
         }
+
+
     }
 }

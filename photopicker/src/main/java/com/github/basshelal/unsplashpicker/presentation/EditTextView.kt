@@ -1,6 +1,7 @@
 package com.github.basshelal.unsplashpicker.presentation
 
 import android.content.Context
+import android.os.Build
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatEditText
 
@@ -15,7 +16,9 @@ internal class EditTextView
         set(value) {
             field = value
             isCursorVisible = value
-            showSoftInputOnFocus = value
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                showSoftInputOnFocus = value
+            }
             isFocusableInTouchMode = value
             isFocusable = value
             isClickable = value
