@@ -6,7 +6,7 @@
     <string name="photo">Photo</string>
     <string name="photo_selected">1 photo selected</string>
     <string name="photos_selected">%1$d photos selected</string>
-    <string name="search">Search Unsplash photos</string>
+    <string name="search">Minimal photo|</string>
     <string name="unsplash">Unsplash</string>
     <string name="photoBy">Photo by</string>
     <string name="on">on</string>

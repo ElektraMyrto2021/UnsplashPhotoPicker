@@ -5,4 +5,8 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowContentTransitions">true</item>
     </style>
+
+    <style name="ProgressBar_Apple">
+        <item name="colorAccent">#77BA4F</item>
+    </style>
 </resources>
