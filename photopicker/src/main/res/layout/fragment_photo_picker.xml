@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.github.basshelal.unsplashpicker.presentation.UnsplashPhotoPicker
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/photoPicker"
-    android:background="@drawable/transparent_radius_12"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent">
 
 </com.github.basshelal.unsplashpicker.presentation.UnsplashPhotoPicker>
